@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Recitation Master · Desktop</title>
+<style>
+:root{--bg:#0b0d12;--panel:#151922;--panel2:#11141b;--line:#242b38;--gold:#e6b96a;--gold-dim:rgba(230,185,106,.13);--text:#e9ecf3;--muted:#8b93a5;--red:#ff5a5f;--green:#4ade80;}
+*{box-sizing:border-box;margin:0;padding:0;}
+[hidden]{display:none!important;}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(1200px 700px at 50% -15%,#1b2233 0%,transparent 62%),var(--bg);color:var(--text);height:100vh;overflow:hidden;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:#2a3140;border-radius:4px;}
+.view{height:100vh;display:flex;flex-direction:column;}
+#globalTools{position:fixed;inset:0 auto 0 0;width:264px;padding:18px 14px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:14px;z-index:180;overflow-y:auto;}
+#globalTools h2{font-size:14px;letter-spacing:.14em;color:var(--muted);}
+#globalTools .tool-card{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;}
+#globalTools .tool-links{display:grid;gap:8px;}
+#globalTools .tool-link{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:13px;text-decoration:none;background:#1a1f28;}
+#globalTools .tool-link:hover{border-color:var(--gold);color:var(--gold);}
+#globalVoiceStatus{color:var(--muted);font-size:12px;line-height:1.7;min-height:34px;}
+#globalVoiceList{display:flex;flex-direction:column;gap:8px;max-height:32vh;overflow-y:auto;margin-top:10px;}
+#globalVoiceList .rec-item{min-width:0;flex-wrap:wrap;}
+#globalVoiceList .rec-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#globalVoiceList .global-audio{display:block;width:100%;height:38px;}
+body>.view{margin-left:264px;width:calc(100% - 264px);}
+@media(max-width:760px){
+  #globalTools{inset:auto 0 0;width:auto;max-height:190px;padding:10px 12px;gap:8px;border-right:0;border-top:1px solid var(--line);}
+  #globalTools .tool-card{padding:9px 11px;}
+  #globalTools .tool-links{grid-template-columns:1fr 1fr;}
+  #globalVoiceList{max-height:68px;flex-direction:row;}
+  #globalVoiceList .rec-item{min-width:210px;}
+  body>.view{margin-left:0;width:100%;padding-bottom:190px;}
+  #aiFab{bottom:202px;}
+  #aiPanel{bottom:272px;height:min(560px,58vh);}
+}
+/* Home */
+.home{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;}
+.logo{font-size:64px;font-weight:800;letter-spacing:.1em;background:linear-gradient(180deg,#fff,var(--gold) 125%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 8px 30px rgba(230,185,106,.22));}
+.slogan{color:var(--muted);font-size:13px;letter-spacing:.34em;margin-bottom:34px;}
+.home-btns{display:flex;gap:22px;}
+.big-btn{width:220px;padding:32px 20px;border-radius:20px;background:linear-gradient(180deg,#1b2130,#141821);border:1px solid var(--line);transition:.22s;text-align:center;}
+.big-btn:hover{transform:translateY(-4px);border-color:var(--gold);box-shadow:0 14px 40px rgba(230,185,106,.16);}
+.big-btn .ico{font-size:34px;display:block;margin-bottom:10px;}
+.big-btn .nm{font-size:20px;font-weight:700;letter-spacing:.12em;}
+.big-btn .ds{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7;}
+.big-btn.primary{background:linear-gradient(180deg,#f0c887,#d9a44f);border-color:transparent;}
+.big-btn.primary .nm{color:#2a1f0c;}
+.big-btn.primary .ds{color:rgba(42,31,12,.62);}
+.kbd-tip{margin-top:30px;color:#4d5566;font-size:12px;letter-spacing:.1em;}
+.kbd-tip b{color:var(--gold);font-weight:600;padding:2px 7px;border:1px solid var(--line);border-radius:5px;background:#141821;}
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(11,13,18,.86);backdrop-filter:blur(12px);flex-shrink:0;}
+.btn{border-radius:10px;padding:9px 16px;font-size:14px;transition:.18s;border:1px solid transparent;white-space:nowrap;}
+.btn.primary{background:linear-gradient(180deg,#f0c887,#d9a44f);color:#2a1f0c;font-weight:700;}
+.btn.primary:hover{filter:brightness(1.07);}
+.btn.ghost{border-color:var(--line);color:var(--muted);background:#141821;}
+.btn.ghost:hover{color:var(--text);border-color:#3a4254;}
+.steps{display:flex;gap:8px;}
+.dot{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:12px;border:1px solid var(--line);color:var(--muted);background:#151922;transition:.2s;}
+.dot.active{border-color:var(--gold);color:var(--gold);box-shadow:0 0 0 4px rgba(230,185,106,.12);}
+.dot.done{background:var(--gold-dim);color:var(--gold);border-color:transparent;}
+/* Main two-column layout */
+.body{flex:1;display:flex;min-height:0;}
+.sidebar{width:380px;flex-shrink:0;border-right:1px solid var(--line);background:var(--panel);padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;}
+.main{flex:1;overflow-y:auto;padding:30px 5%;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:920px;margin:0 auto 18px;}
+.card h2{font-size:21px;margin-bottom:14px;}
+.card h2::before{content:"";display:inline-block;width:4px;height:19px;background:var(--gold);border-radius:2px;margin-right:11px;vertical-align:-2px;}
+.hint{color:var(--muted);font-size:13px;line-height:1.9;margin-bottom:16px;}
+.blank-rate{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 auto 18px;padding:14px 16px;max-width:920px;background:var(--panel);border:1px solid var(--line);border-radius:12px;}
+.blank-rate label{color:var(--muted);font-size:13px;}
+.blank-rate input[type=range]{flex:1;min-width:120px;accent-color:var(--gold);}
+.blank-rate input[type=number]{width:84px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:8px;text-align:center;}
+textarea.main-input{width:100%;min-height:230px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;color:var(--text);font-size:16px;line-height:1.95;padding:18px;outline:none;resize:vertical;}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.between{justify-content:space-between;}
+/* Passage */
+.text-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:34px 38px;font-size:21px;line-height:2.3;letter-spacing:.04em;max-width:920px;margin:0 auto;}
+.text-box p{text-indent:2em;margin-bottom:.6em;}
+.char{cursor:pointer;border-radius:4px;padding:0 1px;transition:.12s;display:inline-block;}
+.char:hover{background:var(--gold-dim);color:var(--gold);}
+.cursive{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:30px;line-height:2.2;}
+.blank{width:1.35em;height:1.9em;background:transparent;border:none;border-bottom:2px solid #4a5468;color:var(--gold);font-size:inherit;text-align:center;outline:none;padding:0;margin:0 1px;transition:.15s;}
+.blank:focus{border-bottom-color:var(--gold);background:rgba(230,185,106,.09);}
+.blank.ok{border-bottom-color:var(--green);color:var(--green);}
+.blank.bad{border-bottom-color:var(--red);color:var(--red);}
+.mark{font-size:.62em;vertical-align:super;margin:0 3px;font-weight:700;}
+.mark-ok{color:var(--green);}
+.mark-bad{color:var(--red);}
+.mark-bad b{color:var(--red);font-size:1.25em;margin-left:1px;}
+/* Recordings */
+.rec-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:12px;background:#1d222c;border:1px solid var(--line);font-size:15px;font-weight:600;transition:.18s;}
+.rec-btn:hover{border-color:#3d4658;}
+.rec-btn.recording{background:rgba(255,90,95,.12);border-color:rgba(255,90,95,.5);color:#ff8a8e;}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:var(--red);}
+.rec-btn.recording .rec-dot{animation:pulse 1.4s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,90,95,.55);}70%{box-shadow:0 0 0 12px rgba(255,90,95,0);}100%{box-shadow:0 0 0 0 rgba(255,90,95,0);}}
+.rec-timer{font-variant-numeric:tabular-nums;font-size:15px;color:var(--muted);text-align:right;}
+.rec-list{display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;min-height:120px;}
+.rec-item{display:flex;align-items:center;gap:10px;padding:9px 11px;background:#1a1f28;border:1px solid var(--line);border-radius:11px;}
+.play-btn{width:30px;height:30px;border-radius:50%;background:var(--gold-dim);color:var(--gold);display:grid;place-items:center;font-size:10px;}
+.rec-name{font-size:12px;color:#c3cad9;margin-bottom:5px;}
+.rec-progress{height:3px;background:#2a3140;border-radius:2px;overflow:hidden;}
+.rec-bar{height:100%;width:0;background:var(--gold);transition:width .1s linear;}
+.rec-time{font-size:12px;color:var(--muted);}
+.del-btn{color:#5a6373;font-size:13px;padding:4px;}
+.del-btn:hover{color:var(--red);}
+.empty-tip{color:#4d5566;font-size:13px;text-align:center;padding:18px 0;line-height:1.9;}
+/* Score */
+.score-bar{padding:16px 20px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;max-width:920px;margin:0 auto 16px;}
+.score-num{font-size:26px;font-weight:800;color:var(--gold);}
+.score-num small{font-size:14px;color:var(--muted);font-weight:400;}
+/* Textbooks */
+.selects{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+select{background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--text);padding:11px 13px;font-size:14px;outline:none;cursor:pointer;}
+.subj-tabs{display:flex;gap:10px;margin-bottom:18px;}
+.subj-tab{padding:10px 22px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:14.5px;font-weight:600;transition:.18s;}
+.subj-tab:hover{border-color:#3d4658;color:var(--text);}
+.subj-tab.active{background:linear-gradient(180deg,#f0c887,#d9a44f);color:#2a1f0c;border-color:transparent;}
+.unit-block{border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden;background:var(--panel2);}
+.unit-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;cursor:pointer;font-size:14.5px;font-weight:600;transition:.15s;}
+.unit-head:hover{background:#181d27;}
+.unit-head .arrow{color:var(--muted);transition:.2s;font-size:12px;}
+.unit-block.open .arrow{transform:rotate(90deg);}
+.unit-body{display:none;padding:6px 12px 14px;}
+.unit-block.open .unit-body{display:block;}
+.item-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;cursor:pointer;transition:.15s;font-size:14px;color:#c3cad9;}
+.item-row:hover{background:var(--gold-dim);color:var(--gold);}
+.item-row .idx{width:22px;height:22px;border-radius:6px;background:#1e2430;display:grid;place-items:center;font-size:11px;color:var(--muted);}
+.item-row .meta{margin-left:auto;font-size:11.5px;color:var(--muted);}
+/* Dialogs */
+.modal{position:fixed;inset:0;background:rgba(4,6,10,.82);backdrop-filter:blur(6px);display:grid;place-items:center;z-index:200;padding:20px;}
+.modal-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;width:min(560px,100%);max-height:86vh;overflow-y:auto;box-shadow:0 30px 90px rgba(0,0,0,.6);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);border-radius:20px 20px 0 0;}
+.modal-head .ttl{font-size:15px;color:var(--muted);letter-spacing:.14em;}
+.modal-body{padding:22px;}
+.char-big{font-size:64px;font-weight:700;color:var(--gold);text-align:center;}
+.char-pinyin{font-size:19px;color:var(--muted);text-align:center;margin-top:8px;}
+.section-lbl{font-size:12px;color:var(--muted);letter-spacing:.2em;margin:16px 0 9px;}
+.word-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{padding:6px 13px;background:var(--gold-dim);color:var(--gold);border-radius:20px;font-size:14px;}
+#strokeTarget{display:flex;justify-content:center;margin:14px 0;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;color:var(--muted);letter-spacing:.14em;margin-bottom:7px;}
+.field input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--text);padding:11px 13px;font-size:14px;outline:none;}
+.provider-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.provider-tab{flex:1;padding:12px 10px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:13.5px;font-weight:600;text-align:center;}
+.provider-tab.active{background:linear-gradient(180deg,#f0c887,#d9a44f);color:#2a1f0c;border-color:transparent;}
+/* AI */
+#aiFab{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:linear-gradient(150deg,#6d8cff,#4f5bff);box-shadow:0 10px 34px rgba(79,91,255,.48);display:grid;place-items:center;font-size:24px;z-index:150;transition:.2s;}
+#aiFab:hover{transform:scale(1.08);}
+#aiPanel{position:fixed;right:22px;bottom:92px;width:400px;height:min(560px,72vh);background:var(--panel);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 26px 80px rgba(0,0,0,.62);z-index:160;}
+.ai-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line);}
+.ai-head .t{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.dot-g{width:8px;height:8px;border-radius:50%;background:var(--green);}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+.msg{max-width:88%;padding:10px 14px;border-radius:13px;font-size:14px;line-height:1.75;white-space:pre-wrap;word-break:break-word;}
+.msg.user{align-self:flex-end;background:#2b3550;}
+.msg.ai{align-self:flex-start;background:#1a1f2a;border:1px solid var(--line);}
+.msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:12px;}
+.ai-input-row{display:flex;gap:8px;padding:11px;border-top:1px solid var(--line);}
+#aiInput{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--text);padding:10px 12px;font-size:14px;outline:none;resize:none;height:42px;}
+#aiSend{padding:0 16px;border-radius:11px;background:linear-gradient(180deg,#f0c887,#d9a44f);color:#2a1f0c;font-weight:700;font-size:14px;}
+.quick-asks{display:flex;gap:6px;padding:0 11px 10px;flex-wrap:wrap;}
+.quick-asks button{font-size:11.5px;padding:5px 10px;border-radius:20px;background:#1a1f2a;border:1px solid var(--line);color:var(--muted);}
+.quick-asks button:hover{color:var(--gold);border-color:var(--gold);}
+</style>
+</head>
+<body>
+
+<aside id="globalTools" aria-label="Voice and music tools">
+  <section class="tool-card">
+    <h2>Voice Recorder</h2>
+    <p id="globalVoiceStatus" aria-live="polite">Click Record and allow microphone access. Your recordings stay available while you switch pages.</p>
+    <div class="row">
+      <button class="btn primary" id="globalRecBtn" type="button">● Start Recording</button>
+      <span class="rec-timer" id="globalRecTimer">00:00</span>
+    </div>
+    <div id="globalVoiceList"><p class="empty-tip">No recordings yet</p></div>
+  </section>
+  <section class="tool-card">
+    <h2>Music</h2>
+    <div class="tool-links">
+      <a class="tool-link" href="https://y.qq.com/" target="_blank" rel="noopener noreferrer">♫ QQ Music</a>
+      <a class="tool-link" href="https://www.kugou.com/" target="_blank" rel="noopener noreferrer">♫ KuGou Music</a>
+    </div>
+  </section>
+</aside>
+
+<div id="view-home" class="view">
+  <div class="home">
+    <div class="logo">Recitation Master</div>
+    <div class="slogan">RECITE · WRITE · MASTER · DESKTOP</div>
+    <div class="home-btns">
+      <button class="big-btn primary" onclick="goPractice()"><span class="ico">⚔️</span><span class="nm">Practice</span><span class="ds">Five-round challenge<br>Paste any passage</span></button>
+      <button class="big-btn" onclick="goChallenge()"><span class="ico">📚</span><span class="nm">Challenge</span><span class="ds">Choose a grade and subject<br>Language Arts · Math · English</span></button>
+    </div>
+    <div class="kbd-tip"><b>Space</b> Toggle recording · <b>Enter</b> Send to AI · <b>Esc</b> Close dialog</div>
+  </div>
+</div>
+
+<div id="view-practice" class="view" hidden>
+  <div class="topbar">
+    <button class="btn ghost" onclick="goHome()">← Back</button>
+    <div class="steps" id="steps"></div>
+    <button class="btn ghost" id="btnRestart" onclick="restartPractice()" hidden>Restart</button>
+  </div>
+  <div class="body">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main" id="practiceMain"></div>
+  </div>
+</div>
+
+<div id="view-challenge" class="view" hidden>
+  <div class="topbar">
+    <button class="btn ghost" onclick="goHome()">← Back</button>
+    <div style="font-size:14px;letter-spacing:.14em;color:var(--muted)">PRIMARY SCHOOL TEXTBOOKS</div>
+    <button class="btn ghost" onclick="resetChallenge()">Choose Again</button>
+  </div>
+  <div class="main" id="challengeMain" style="flex:1;overflow-y:auto;padding:30px 5%"></div>
+</div>
+
+<!-- Character details dialog -->
+<div class="modal" id="charModal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <span class="ttl">LETTER DETAILS</span>
+      <button class="btn ghost" style="padding:6px 13px;font-size:13px" onclick="closeChar()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="char-big" id="charBig"></div>
+      <div class="char-pinyin" id="charPinyin">—</div>
+      <div class="section-lbl">LETTER IN CONTEXT</div>
+      <div id="strokeTarget"></div>
+      <div style="text-align:center"><button class="btn ghost" onclick="replayStroke()">▶ Replay Context</button></div>
+      <div class="section-lbl">RELATED WORDS</div>
+      <div class="word-chips" id="wordChips"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI settings -->
+<div class="modal" id="aiConfigModal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <span class="ttl">AI SETTINGS</span>
+      <button class="btn ghost" style="padding:6px 13px;font-size:13px" onclick="closeAIConfig()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="provider-tabs" id="providerTabs"></div>
+      <div class="field"><label>API Endpoint</label><input id="cfgEndpoint" placeholder="https://api.moonshot.cn/v1/chat/completions"></div>
+      <div class="field"><label>Model</label><input id="cfgModel" placeholder="moonshot-v1-8k"></div>
+      <div class="field"><label>API Key</label><input id="cfgKey" type="password" placeholder="Paste your Moonshot API key"></div>
+      <p class="hint">Your key is stored only in this browser's local settings. Do not share it or put it in the webpage source.</p>
+      <div class="row" style="justify-content:flex-end;gap:10px;margin-top:14px">
+        <button class="btn ghost" onclick="testAIConnection()">Test Connection</button>
+        <button class="btn primary" onclick="saveAIConfig()">Save</button>
+      </div>
+      <div id="cfgMsg" style="margin-top:14px;font-size:13px;"></div>
+    </div>
+  </div>
+</div>
+
+<button id="aiFab" onclick="toggleAI()">🤖</button>
+<div id="aiPanel" hidden>
+  <div class="ai-head">
+    <span class="t"><span class="dot-g"></span> AI Assistant <span style="font-size:11px;color:var(--gold)" id="aiProviderBadge">DeepSeek</span></span>
+    <button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="openAIConfig()">⚙</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs"></div>
+  <div class="quick-asks" id="quickAsks"></div>
+  <div class="ai-input-row">
+    <textarea id="aiInput" placeholder="Ask something... (Enter to send)"></textarea>
+    <button id="aiSend" onclick="sendAI()">Send</button>
+  </div>
+</div>
+
+<script>
+/* ============ Utilities ============ */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const CJK=/[\u4e00-\u9fff]/,isBlankable=c=>CJK.test(c)||/[A-Za-z0-9]/.test(c);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmtTime=s=>{s=Math.max(0,Math.floor(s||0));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
+
+/* ============ Views ============ */
+function show(v){['home','practice','challenge'].forEach(x=>$('#view-'+x).hidden=x!==v);document.body.dataset.view=v;updateQuickAsks();}
+function goHome(){stopAllAudio();show('home');}
+
+/* ============ Textbook Library (Core Selection) ============ */
+const GRADE_TERMS=Array.from({length:6},(_,i)=>[`Grade ${i+1} · Fall Term`,`Grade ${i+1} · Spring Term`]).flat();
+const LIB={"Language Arts":{"English Edition":{}},"Math":{"English Edition":{}},"English":{"English Edition":{}}};
+const READING_SAMPLES=[
+  ["A Bright Morning","Mia opens the curtains. Sunlight fills the room. She packs her book and waves goodbye."],
+  ["The Helpful Seed","A small seed rests in warm soil. Rain wakes it, and sunlight helps it grow into a flower."],
+  ["The Lost Kite","A red kite drifts beyond the hill. Sam follows the string and finds it beside a quiet stream."],
+  ["A Walk in the Woods","Leaves whisper overhead. We follow animal tracks and leave every plant undisturbed."],
+  ["The Old Oak Tree","For many years, an oak tree has offered shade to the village. Neighbors gather beneath its branches."],
+  ["A Letter to the Future","We can protect tomorrow by caring for the world today: save water, reuse what we can, and help one another."]
+];
+const MATH_TOPICS=[
+  [["Counting and Comparing","Addition and Subtraction","Shapes Around Us"],["Numbers to 100","Place Value","Coins and Simple Prices"]],
+  [["Length and Measurement","Addition Strategies","Shapes and Patterns"],["Multiplication as Groups","Sharing Equally","Reading a Clock"]],
+  [["Time and Calendars","Multiplication Facts","Perimeter and Fractions"],["Division","Area","Reading Simple Charts"]],
+  [["Large Numbers","Angles and Lines","Multiplication and Division"],["Fractions and Decimals","Area and Perimeter","Averages and Data"]],
+  [["Decimal Operations","Coordinates","Fractions and Factors"],["Volume","Fractions and Decimals","Patterns and Probability"]],
+  [["Ratios and Percentages","Circles and Area","Fractions in Context"],["Negative Numbers","Proportions","Review and Problem Solving"]]
+];
+const MATH_NOTES={
+  "Counting and Comparing":"Count objects carefully, compare quantities, and explain which group has more or fewer.",
+  "Addition and Subtraction":"Use objects, number lines, and place value to solve addition and subtraction problems.",
+  "Shapes Around Us":"Name common flat and solid shapes and describe their sides, corners, and faces.",
+  "Numbers to 100":"Read, write, compare, and order whole numbers up to one hundred.",
+  "Place Value":"Show how a digit's position tells its value in ones, tens, and hundreds.",
+  "Coins and Simple Prices":"Recognize common coins, add their values, and solve simple shopping problems.",
+  "Length and Measurement":"Choose a suitable unit and compare or measure the length of everyday objects.",
+  "Addition Strategies":"Break numbers apart and use place value to make addition easier.",
+  "Shapes and Patterns":"Identify repeating patterns and describe how a shape changes from one step to the next.",
+  "Multiplication as Groups":"Represent multiplication as equal groups, arrays, and repeated addition.",
+  "Sharing Equally":"Use equal groups and multiplication facts to understand division.",
+  "Reading a Clock":"Read time to the nearest minute and describe how much time has passed.",
+  "Time and Calendars":"Read a calendar and solve problems involving days, weeks, and elapsed time.",
+  "Multiplication Facts":"Use multiplication facts and place value to multiply whole numbers.",
+  "Perimeter and Fractions":"Find a shape's perimeter and describe equal parts as fractions.",
+  "Division":"Use place value and multiplication facts to divide whole numbers.",
+  "Area":"Measure the surface inside a shape using square units.",
+  "Reading Simple Charts":"Read a chart, compare categories, and support an answer with data.",
+  "Large Numbers":"Read, write, compare, and round large whole numbers.",
+  "Angles and Lines":"Classify angles and describe relationships between lines.",
+  "Multiplication and Division":"Choose an efficient written or mental strategy for multi-digit calculations.",
+  "Fractions and Decimals":"Compare, represent, and calculate with fractions and decimal numbers.",
+  "Area and Perimeter":"Choose a formula to find the area or perimeter of common shapes.",
+  "Averages and Data":"Summarize a small data set and explain what its average represents.",
+  "Decimal Operations":"Add, subtract, multiply, and divide decimals using place value.",
+  "Coordinates":"Use ordered pairs to locate and describe points on a grid.",
+  "Fractions and Factors":"Find factors and use equivalent fractions to solve problems.",
+  "Volume":"Measure the space inside a solid using cubic units.",
+  "Patterns and Probability":"Describe a number pattern and compare the likelihood of simple events.",
+  "Ratios and Percentages":"Use ratios, rates, and percentages to compare quantities.",
+  "Circles and Area":"Describe a circle and use its radius to reason about circumference and area.",
+  "Fractions in Context":"Use fraction operations to solve measurement and sharing problems.",
+  "Negative Numbers":"Compare positive and negative numbers on a number line.",
+  "Proportions":"Use equivalent ratios to solve proportion and scale problems.",
+  "Review and Problem Solving":"Choose and explain a strategy for a multi-step mathematics problem."
+};
+const ENGLISH_STARTERS=[
+  [["Hello, Friends","greetings, names, classroom words","Hello! My name is Alex. What is your name?"],["Colors Around Us","red, blue, green, yellow","The sky is blue. My bag is green."]],
+  [["My Family","family words, people, describing words","This is my family. We help one another."],["At School","classroom objects, numbers, instructions","Please open your book and write your name."]],
+  [["My School Day","school places, subjects, daily routines","I have English in the morning. At lunch, I talk with my friends."],["Animals Near Us","animal names, sizes, movement","The small rabbit hops across the grass and hides under a bush."]],
+  [["Our Neighborhood","places in town, directions, transport","Turn left at the library. The park is across the street."],["Healthy Habits","food, exercise, daily habits","A healthy day includes good food, fresh air, and enough sleep."]],
+  [["A Week of Plans","days, activities, future plans","On Saturday, we are going to visit the science museum."],["A Nature Journal","weather, seasons, describing nature","In autumn, golden leaves drift slowly across the path."]],
+  [["Around the World","travel, places, asking for directions","Excuse me, how can I get to the station? Walk straight and turn right."],["People Who Help Us","jobs, skills, community","A firefighter works with a team to keep people safe."]]
+];
+for(let grade=1;grade<=6;grade++){
+  const fall=`Grade ${grade} · Fall Term`,spring=`Grade ${grade} · Spring Term`;
+  for(const term of [fall,spring]){
+    const termIndex=term===fall?0:1;
+    const sample=READING_SAMPLES[(grade-1+termIndex*2)%READING_SAMPLES.length];
+    LIB["Language Arts"]["English Edition"][term]=[{u:"Reading",items:[
+      {t:sample[0],a:"Original English passage",x:sample[1]},
+      {t:"Reading Check",a:"Comprehension",x:`Read “${sample[0]}” again. What happened first? Which detail supports your answer? Retell the main idea in your own words.`}
+    ]}];
+    LIB.Math["English Edition"][term]=[{u:"Core Topics",items:MATH_TOPICS[grade-1][termIndex].map(topic=>({t:topic,a:"Math",x:MATH_NOTES[topic]}))}];
+    const lessons=ENGLISH_STARTERS[grade-1].map(([title,words,pattern])=>({t:title,a:"English",x:`Vocabulary: ${words}\n\nUseful sentence: ${pattern}`}));
+    LIB.English["English Edition"][term]=[{u:"Units",items:lessons}];
+  }
+}
+
+/* ============ Practice State ============ */
+const P={text:'',round:1,started:false,r2Blank:new Set(),r3Blank:new Set(),r2Ready:false,r3Ready:false,chars:[]};
+
+function goPractice(){
+  P.started=false;P.round=1;P.text='';
+  show('practice');
+  $('#btnRestart').hidden=true;
+  renderSteps();
+  $('#sidebar').innerHTML='';
+  renderPracticeIntro();
+}
+function restartPractice(){if(confirm('Restart this challenge?'))goPractice();}
+function renderSteps(){
+  const el=$('#steps');
+  if(!P.started){el.innerHTML='';return;}
+  let h='';
+  for(let i=1;i<=5;i++){
+    const cls=i===P.round?'active':(i<P.round?'done':'');
+    h+=`<span class="dot ${cls}">${i}</span>`;
+  }
+  el.innerHTML=h;
+}
+const ROUND_VOICE={recognition:null,active:false,text:'',results:[]};
+function stopRoundVoice(){
+  const recognition=ROUND_VOICE.recognition;
+  ROUND_VOICE.recognition=null;ROUND_VOICE.active=false;ROUND_VOICE.results=[];
+  if(recognition)try{recognition.abort();}catch(e){}
+}
+function addRoundVoiceTool(){
+  const root=$('#practiceMain');if(!root)return;
+  if($('#roundVoiceTool'))return;
+  const card=document.createElement('div');
+  card.className='card';
+  card.id='roundVoiceTool';
+  card.innerHTML='<h2>Voice Input for This Round</h2><p class="hint">Click Start and allow microphone access. Recognized speech appears below. Compare it with the source text or insert it into the current answer fields.</p><div class="row" style="gap:10px;margin-bottom:12px"><button class="btn primary" id="roundVoiceButton" type="button">🎙 Start Voice Input</button><button class="btn ghost" id="roundVoiceGrade" type="button">Compare with Source</button><button class="btn ghost" id="roundVoiceInsert" type="button">Fill Current Blanks/Fields</button></div><textarea id="roundVoiceText" class="main-input" style="min-height:88px" placeholder="Recognized speech will appear here. You can also edit it manually."></textarea><div id="roundVoiceStatus" class="hint" style="margin:8px 0 0" aria-live="polite">Availability depends on browser speech recognition and network support.</div><div id="roundVoiceScore"></div>';
+  root.prepend(card);
+  $('#roundVoiceButton').addEventListener('click',()=>ROUND_VOICE.active?stopRoundVoiceInput():startRoundVoiceInput());
+  $('#roundVoiceGrade').addEventListener('click',gradeRoundVoice);
+  $('#roundVoiceInsert').addEventListener('click',insertRoundVoiceText);
+}
+function startRoundVoiceInput(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const status=$('#roundVoiceStatus');
+  if(!SR){status.textContent='This browser does not support web speech recognition. Try the latest Chrome or Edge and check your internet connection.';status.style.color='var(--red)';return;}
+  stopRoundVoice();
+  if(P.round===4)cancelSR4();
+  ROUND_VOICE.text='';ROUND_VOICE.results=[];ROUND_VOICE.active=true;
+  $('#roundVoiceText').value='';
+  $('#roundVoiceScore').innerHTML='';
+  const recognition=new SR();ROUND_VOICE.recognition=recognition;
+  recognition.lang='en-US';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
+  recognition.onresult=e=>{
+    if(ROUND_VOICE.recognition!==recognition)return;
+    for(let i=e.resultIndex;i<e.results.length;i++)ROUND_VOICE.results[i]=e.results[i][0].transcript;
+    ROUND_VOICE.text=ROUND_VOICE.results.filter(Boolean).join('');
+    $('#roundVoiceText').value=ROUND_VOICE.text;
+    status.textContent='Listening. Click “Stop Voice Input” when you finish reading.';
+    status.style.color='var(--muted)';
+  };
+  recognition.onerror=e=>{
+    if(ROUND_VOICE.recognition!==recognition)return;
+    const messages={'not-allowed':'Microphone access was denied. Allow microphone access for this page.','service-not-allowed':'Speech recognition is unavailable. Try Chrome or Edge and check your connection.','audio-capture':'No microphone was detected.','network':'Speech recognition network error. Check your connection.','no-speech':'No speech detected. Read clearly and try again.'};
+    status.textContent=messages[e.error]||`Speech recognition error: ${e.error}`;
+    status.style.color='var(--red)';
+  };
+  recognition.onend=()=>{
+    if(ROUND_VOICE.recognition!==recognition)return;
+    ROUND_VOICE.recognition=null;ROUND_VOICE.active=false;
+    $('#roundVoiceButton').textContent='🎙 Start Voice Input';
+    if(!ROUND_VOICE.text){status.textContent=status.text||'No speech was recognized. Check microphone access and your connection, then try again.';status.style.color='var(--red)';}
+    else if(!status.textContent.startsWith('Speech recognition error')&&!status.textContent.startsWith('Microphone')&&!status.textContent.startsWith('No microphone')&&!status.textContent.startsWith('Speech recognition network'))status.textContent='Recognition complete. Compare with the source or fill this round’s answer fields.';
+  };
+  try{
+    recognition.start();
+    $('#roundVoiceButton').textContent='■ Stop Voice Input';
+    status.textContent='Listening. Start reading now...';
+    status.style.color='var(--muted)';
+  }catch(e){
+    ROUND_VOICE.recognition=null;ROUND_VOICE.active=false;
+    $('#roundVoiceButton').textContent='🎙 Start Voice Input';
+    status.textContent=`Could not start speech recognition: ${e.message||'Check microphone access and browser support.'}`;
+    status.style.color='var(--red)';
+  }
+}
+function stopRoundVoiceInput(){
+  const recognition=ROUND_VOICE.recognition;
+  if(!recognition)return;
+  ROUND_VOICE.active=false;
+  $('#roundVoiceButton').textContent='Stopping...';
+  try{recognition.stop();}
+  catch(e){
+    ROUND_VOICE.recognition=null;
+    $('#roundVoiceButton').textContent='🎙 Start Voice Input';
+    $('#roundVoiceStatus').textContent=`Could not stop speech recognition: ${e.message||'Please try again.'}`;
+    $('#roundVoiceStatus').style.color='var(--red)';
+  }
+}
+function gradeRoundVoice(){
+  const heard=$('#roundVoiceText').value.trim();
+  const clean=s=>s.toLocaleLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
+  const expected=clean(P.text),spoken=clean(heard);
+  if(!spoken){$('#roundVoiceScore').innerHTML='<p class="hint">Start voice input first, or type the recognized text in the field.</p>';return;}
+  const percent=matchPercent(expected,spoken);
+  $('#roundVoiceScore').innerHTML=scoreBarHTML(percent,100).replace(`${percent} / 100`,`${percent}%`);
+}
+function insertRoundVoiceText(){
+  const text=$('#roundVoiceText').value.trim();
+  if(!text){$('#roundVoiceStatus').textContent='There is no recognized text to insert.';return;}
+  const root=$('#practiceMain'),active=document.activeElement;
+  if(active&&root.contains(active)&&(active.matches('input.blank'))){
+    const blanks=[...root.querySelectorAll('input.blank')],start=blanks.indexOf(active),chars=[...text].filter(c=>!/\s/.test(c));
+    chars.forEach((c,i)=>{if(blanks[start+i])blanks[start+i].value=c;});
+    blanks[Math.min(start+chars.length,blanks.length-1)]?.focus();
+    return;
+  }
+  if(active&&root.contains(active)&&(active.matches('input,textarea'))&&active.id!=='roundVoiceText'){
+    const from=active.selectionStart??active.value.length,to=active.selectionEnd??from;
+    active.setRangeText(text,from,to,'end');active.dispatchEvent(new Event('input',{bubbles:true}));return;
+  }
+  const firstEmpty=root.querySelector('input.blank:not([readonly])');
+  if(firstEmpty){firstEmpty.focus();firstEmpty.value=text;firstEmpty.dispatchEvent(new Event('input',{bubbles:true}));return;}
+  $('#roundVoiceStatus').textContent='Select an answer field first, or choose an exercise mode with blanks.';
+}
+function renderPracticeIntro(){
+  $('#practiceMain').innerHTML=`
+    <div class="card">
+      <h2>Paste a Passage to Memorize</h2>
+      <p class="hint">Paste any passage. Click Start to create a five-round challenge.</p>
+      <textarea class="main-input" id="mainText" placeholder="Paste a passage here..."></textarea>
+      <div class="row between" style="margin-top:16px">
+        <span id="charCount" style="color:var(--muted);font-size:13px">0 characters</span>
+        <div class="row">
+          <button class="btn ghost" onclick="loadDemo()">Load Example</button>
+          <button class="btn primary" onclick="startPractice()">Start 5-Round Challenge →</button>
+        </div>
+      </div>
+    </div>`;
+  const ta=$('#mainText');
+  ta.addEventListener('input',()=>{$('#charCount').textContent=ta.value.trim().length+' characters';});
+  ta.focus();
+}
+function loadDemo(){
+  const ta=$('#mainText');
+  ta.value="The moonlight shines beside my bed,\nLike frost upon the ground.\nI raise my eyes to watch the moon,\nThen think of home, so far away.";
+  $('#charCount').textContent=ta.value.trim().length+' characters';
+}
+function startPractice(){
+  const txt=$('#mainText').value.trim();
+  if(!txt){alert('Paste a passage first.');return;}
+  P.text=txt;P.chars=[...txt];P.round=1;P.started=true;
+  P.r2Blank=new Set();P.r3Blank=new Set();P.r2Ready=false;P.r3Ready=false;
+  R4_CLOZE=new Set();R4_CLOZE_READY=false;
+  $('#btnRestart').hidden=false;
+  renderSteps();renderRound();
+}
+function renderRound(){stopRoundVoice();if(P.round!==4)cancelSR4();renderSteps();({1:renderR1,2:renderR2,3:renderR3,4:renderR4,5:renderR5})[P.round]();if(P.round!==5)addRoundVoiceTool();}
+function roundHeader(t,s){return`<div class="card" style="background:transparent;border:none;padding:0 4px 10px"><h2>${t}</h2><p class="hint" style="margin:0">${s}</p></div>`;}
+function nextRound(){if(P.round>=5)return;stopAllAudio();P.round++;renderRound();$('#practiceMain').scrollTop=0;}
+
+/* ============ Global Recording ============ */
+const GLOBAL_VOICE={stream:null,recorder:null,chunks:[],recording:false,requesting:false,startTime:0,timer:null,playing:null,count:0,urls:[]};
+function setGlobalVoiceStatus(message,isError=false){
+  const el=$('#globalVoiceStatus');if(!el)return;
+  el.textContent=message;el.style.color=isError?'var(--red)':'var(--muted)';
+}
+function initGlobalVoice(){
+  $('#globalRecBtn').addEventListener('click',()=>GLOBAL_VOICE.recording?stopGlobalRecording():startGlobalRecording());
+}
+async function startGlobalRecording(){
+  if(GLOBAL_VOICE.recording||GLOBAL_VOICE.requesting)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+    setGlobalVoiceStatus('Recording is not supported in this browser. Use an up-to-date Chrome or Edge on a secure page.',true);return;
+  }
+  GLOBAL_VOICE.requesting=true;$('#globalRecBtn').disabled=true;
+  setGlobalVoiceStatus('Requesting microphone access...');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    GLOBAL_VOICE.stream=stream;
+    const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type=>MediaRecorder.isTypeSupported(type));
+    const recorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+    GLOBAL_VOICE.recorder=recorder;GLOBAL_VOICE.chunks=[];
+    recorder.ondataavailable=e=>{if(e.data&&e.data.size)GLOBAL_VOICE.chunks.push(e.data);};
+    recorder.onerror=e=>setGlobalVoiceStatus(`Recording failed: ${e.error&&e.error.message||'Browser recording error.'}`,true);
+    recorder.onstop=()=>{
+      const chunks=GLOBAL_VOICE.chunks;
+      GLOBAL_VOICE.chunks=[];
+      const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
+      if(blob.size)saveGlobalRecording(blob);
+      else setGlobalVoiceStatus('No audio was recorded. Check your microphone input and permissions, then try again.',true);
+      if(GLOBAL_VOICE.stream){GLOBAL_VOICE.stream.getTracks().forEach(track=>track.stop());GLOBAL_VOICE.stream=null;}
+      GLOBAL_VOICE.recorder=null;
+    };
+    recorder.start();
+    GLOBAL_VOICE.recording=true;GLOBAL_VOICE.startTime=Date.now();
+    $('#globalRecBtn').textContent='■ Stop Recording';$('#globalRecBtn').classList.add('ghost');$('#globalRecBtn').classList.remove('primary');
+    setGlobalVoiceStatus('Recording. Click “Stop Recording” when finished to play it back.');
+    GLOBAL_VOICE.timer=setInterval(()=>{
+      const elapsed=Math.floor((Date.now()-GLOBAL_VOICE.startTime)/1000);
+      $('#globalRecTimer').textContent=fmtTime(elapsed);
+    },250);
+  }catch(e){
+    if(GLOBAL_VOICE.stream){GLOBAL_VOICE.stream.getTracks().forEach(track=>track.stop());GLOBAL_VOICE.stream=null;}
+    setGlobalVoiceStatus(`Could not start recording: ${e.message||'Check microphone permissions and try again.'}`,true);
+  }finally{
+    GLOBAL_VOICE.requesting=false;$('#globalRecBtn').disabled=false;
+  }
+}
+function stopGlobalRecording(){
+  if(!GLOBAL_VOICE.recording)return;
+  GLOBAL_VOICE.recording=false;
+  clearInterval(GLOBAL_VOICE.timer);GLOBAL_VOICE.timer=null;
+  $('#globalRecBtn').textContent='● Start Recording';$('#globalRecBtn').classList.add('primary');$('#globalRecBtn').classList.remove('ghost');
+  $('#globalRecTimer').textContent=fmtTime((Date.now()-GLOBAL_VOICE.startTime)/1000);
+  setGlobalVoiceStatus('Recording stopped. Preparing the audio file...');
+  if(GLOBAL_VOICE.recorder&&GLOBAL_VOICE.recorder.state!=='inactive')GLOBAL_VOICE.recorder.stop();
+}
+function saveGlobalRecording(blob){
+  const url=URL.createObjectURL(blob),count=++GLOBAL_VOICE.count;
+  GLOBAL_VOICE.urls.push(url);
+  const list=$('#globalVoiceList'),empty=list.querySelector('.empty-tip');if(empty)empty.remove();
+  const item=document.createElement('div');item.className='rec-item';
+  item.innerHTML=`<div style="flex:1;min-width:0"><div class="rec-name">Recording ${count}</div></div><button class="del-btn" type="button" aria-label="Delete recording">✕</button><audio class="global-audio" controls preload="metadata" aria-label="Play recording ${count}"></audio>`;
+  const audio=item.querySelector('.global-audio');audio.src=url;
+  audio.addEventListener('play',()=>{
+    if(GLOBAL_VOICE.playing&&GLOBAL_VOICE.playing!==audio)GLOBAL_VOICE.playing.pause();
+    GLOBAL_VOICE.playing=audio;
+  });
+  audio.addEventListener('pause',()=>{if(GLOBAL_VOICE.playing===audio)GLOBAL_VOICE.playing=null;});
+  audio.addEventListener('ended',()=>{if(GLOBAL_VOICE.playing===audio)GLOBAL_VOICE.playing=null;});
+  audio.addEventListener('error',()=>setGlobalVoiceStatus('The recording could not be decoded or played. Re-record with the latest Chrome or Edge and check system volume.',true));
+  audio.load();
+  item.querySelector('.del-btn').addEventListener('click',()=>{
+    if(GLOBAL_VOICE.playing===audio)stopGlobalPlayback();
+    audio.pause();URL.revokeObjectURL(url);GLOBAL_VOICE.urls=GLOBAL_VOICE.urls.filter(saved=>saved!==url);item.remove();
+    if(!list.querySelector('.rec-item')){list.innerHTML='<p class="empty-tip">No recordings yet</p>';GLOBAL_VOICE.count=0;}
+  });
+  list.appendChild(item);list.scrollTop=list.scrollHeight;
+  setGlobalVoiceStatus('Recording saved. Use the player controls to play, seek, or adjust the volume.');
+}
+function stopGlobalPlayback(){
+  if(!GLOBAL_VOICE.playing)return;
+  const audio=GLOBAL_VOICE.playing;
+  audio.pause();audio.currentTime=0;GLOBAL_VOICE.playing=null;
+}
+
+/* ============ Recording ============ */
+const REC={mr:null,stream:null,chunks:[],recording:false,startTime:0,elapsed:0,timer:null,count:0,playing:null};
+function stopAllAudio(){stopRoundVoice();cancelSR4();if(REC.playing){try{REC.playing.audio.pause();}catch(e){}REC.playing=null;}if(REC.recording)stopRec();if(window.speechSynthesis)speechSynthesis.cancel();}
+function recPanelHTML(){return`
+  <h2 style="font-size:14px;color:var(--muted);letter-spacing:.18em;margin-bottom:12px">MY RECORDINGS</h2>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <button id="recBtn" class="rec-btn" style="flex:1"><span class="rec-dot"></span><span id="recLabel">Start Recording</span></button>
+    <div class="rec-timer" id="recTimer">00:00</div>
+  </div>
+  <div class="rec-list" id="recList"><p class="empty-tip">No recordings yet</p></div>`;}
+function bindRecPanel(){
+  const btn=$('#recBtn');if(!btn)return;
+  REC.count=0;$('#recList').innerHTML='<p class="empty-tip">No recordings yet</p>';$('#recTimer').textContent='00:00';
+  btn.addEventListener('click',()=>REC.recording?stopRec():startRec());
+}
+async function startRec(){
+  if(!navigator.mediaDevices||!window.MediaRecorder){alert('Recording is not supported in this browser.');return;}
+  try{REC.stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+  catch(e){alert('Could not access the microphone: '+e.message);return;}
+  REC.chunks=[];
+  let mime='';
+  if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))mime='audio/webm;codecs=opus';
+  else if(MediaRecorder.isTypeSupported('audio/webm'))mime='audio/webm';
+  try{REC.mr=mime?new MediaRecorder(REC.stream,{mimeType:mime}):new MediaRecorder(REC.stream);}catch(e){REC.mr=new MediaRecorder(REC.stream);}
+  REC.mr.ondataavailable=e=>{if(e.data.size)REC.chunks.push(e.data);};
+  REC.mr.onstop=()=>{
+    if(REC.chunks.length){const b=new Blob(REC.chunks,{type:REC.mr.mimeType||'audio/webm'});addRecItem(URL.createObjectURL(b),REC.elapsed);}
+    if(REC.stream){REC.stream.getTracks().forEach(t=>t.stop());REC.stream=null;}
+  };
+  REC.mr.start();REC.recording=true;
+  $('#recBtn').classList.add('recording');$('#recLabel').textContent='Stop Recording';
+  REC.startTime=Date.now();REC.elapsed=0;
+  REC.timer=setInterval(()=>{REC.elapsed=Math.floor((Date.now()-REC.startTime)/1000);const t=$('#recTimer');if(t)t.textContent=fmtTime(REC.elapsed);},200);
+}
+function stopRec(){
+  if(!REC.mr||!REC.recording)return;
+  REC.elapsed=Math.floor((Date.now()-REC.startTime)/1000);
+  clearInterval(REC.timer);REC.timer=null;REC.recording=false;
+  const b=$('#recBtn');if(b){b.classList.remove('recording');$('#recLabel').textContent='Start Recording';}
+  try{REC.mr.stop();}catch(e){}
+}
+function addRecItem(url,sec){
+  REC.count++;
+  const list=$('#recList');if(!list)return;
+  const tip=list.querySelector('.empty-tip');if(tip)tip.remove();
+  const item=document.createElement('div');item.className='rec-item';
+  item.innerHTML=`<button class="play-btn" aria-label="Play recording">▶</button><div style="flex:1;min-width:0"><div class="rec-name">Recitation ${REC.count}</div><div class="rec-progress"><div class="rec-bar"></div></div></div><span class="rec-time">${fmtTime(sec)}</span><button class="del-btn" aria-label="Delete recording">✕</button>`;
+  const audio=new Audio(url);audio.preload='metadata';
+  const playBtn=item.querySelector('.play-btn'),bar=item.querySelector('.rec-bar');
+  playBtn.addEventListener('click',()=>{
+    if(REC.playing&&REC.playing.audio===audio){stopPlaying();return;}
+    stopPlaying();audio.currentTime=0;
+    audio.play().then(()=>{playBtn.textContent='❚❚';REC.playing={audio,playBtn,bar};}).catch(()=>{});
+  });
+  audio.addEventListener('timeupdate',()=>{const d=(isFinite(audio.duration)&&audio.duration>0)?audio.duration:(sec||1);bar.style.width=Math.min(100,audio.currentTime/d*100)+'%';});
+  audio.addEventListener('ended',()=>{playBtn.textContent='▶';bar.style.width='0%';if(REC.playing&&REC.playing.audio===audio)REC.playing=null;});
+  item.querySelector('.del-btn').addEventListener('click',()=>{
+    if(REC.playing&&REC.playing.audio===audio)stopPlaying();
+    audio.pause();URL.revokeObjectURL(url);item.remove();
+    if(!list.querySelectorAll('.rec-item').length){list.innerHTML='<p class="empty-tip">No recordings yet</p>';REC.count=0;}
+  });
+  list.appendChild(item);list.scrollTop=list.scrollHeight;
+}
+function stopPlaying(){if(!REC.playing)return;REC.playing.audio.pause();REC.playing.audio.currentTime=0;REC.playing.playBtn.textContent='▶';REC.playing.bar.style.width='0%';REC.playing=null;}
+
+/* ============ Text Rendering and Grading ============ */
+function renderTextHTML(chars,blankSet){
+  let h='';
+  for(let i=0;i<chars.length;i++){
+    const c=chars[i];
+    if(c==='\n'){h+='<br>';continue;}
+    if(blankSet&&blankSet.has(i))h+=`<input class="blank" data-ans="${esc(c)}" autocomplete="off">`;
+    else h+=`<span class="char" data-ch="${esc(c)}">${esc(c)}</span>`;
+  }
+  return h;
+}
+function bindCharClicks(root){root.querySelectorAll('.char').forEach(el=>el.addEventListener('click',()=>openChar(el.dataset.ch)));}
+const normalizeAnswer=s=>(s||'').trim().toLocaleLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
+function judge(val,ans){
+  val=(val||'').trim();ans=(ans||'').trim();
+  if(!val)return{ok:false};
+  const normalized=normalizeAnswer(val),expected=normalizeAnswer(ans);
+  return{ok:!!normalized&&normalized===expected};
+}
+function matchPercent(expected,spoken){
+  const a=[...expected],b=[...spoken];
+  if(!a.length)return 0;
+  const dp=new Array(b.length+1).fill(0);
+  for(let i=1;i<=a.length;i++){
+    let diagonal=0;
+    for(let j=1;j<=b.length;j++){
+      const previous=dp[j];
+      dp[j]=a[i-1]===b[j-1]?diagonal+1:Math.max(dp[j],dp[j-1]);
+      diagonal=previous;
+    }
+  }
+  return Math.round(dp[b.length]/a.length*100);
+}
+function gradeBlanks(root){
+  const inputs=root.querySelectorAll('input.blank');let right=0;
+  inputs.forEach(inp=>{
+    const old=inp.nextElementSibling;if(old&&old.classList.contains('mark'))old.remove();
+    inp.classList.remove('ok','bad');
+    const ans=inp.dataset.ans,r=judge(inp.value,ans);
+    if(r.ok){inp.classList.add('ok');const m=document.createElement('span');m.className='mark mark-ok';m.textContent='✓';inp.after(m);right++;}
+    else{inp.classList.add('bad');const m=document.createElement('span');m.className='mark mark-bad';m.innerHTML='✗<b>'+esc(ans)+'</b>';inp.after(m);}
+  });
+  return{right,total:inputs.length};
+}
+function scoreBarHTML(r,t){
+  const p=t?Math.round(r/t*100):0;
+  let c='Keep going!';
+  if(p>=95)c='Outstanding — almost perfect!';else if(p>=80)c='Great work!';else if(p>=60)c='Good progress.';
+  return`<div class="score-bar"><div><span class="score-num">${r}<small> / ${t}</small></span><span style="margin-left:14px;color:var(--muted);font-size:14px">Accuracy ${p}%</span></div><div style="color:var(--muted);font-size:14px">${c}</div></div>`;
+}
+function autoFocusNext(root){
+  const inputs=[...root.querySelectorAll('input.blank')];
+  const distributeText=(start,text)=>{
+    const chars=[...text].filter(c=>!/\s/.test(c));
+    if(chars.length<2)return false;
+    chars.forEach((c,offset)=>{if(inputs[start+offset])inputs[start+offset].value=c;});
+    const next=inputs[Math.min(start+chars.length,inputs.length-1)];
+    if(next)next.focus();
+    return true;
+  };
+  inputs.forEach((inp,i)=>{
+    let composing=false;
+    const focusNext=()=>{if(document.activeElement===inp&&inp.value.length===1&&i<inputs.length-1)inputs[i+1].focus();};
+    inp.addEventListener('compositionstart',()=>{composing=true;});
+    inp.addEventListener('compositionend',()=>{
+      composing=false;
+      setTimeout(()=>{if(!distributeText(i,inp.value))focusNext();},0);
+    });
+    inp.addEventListener('paste',e=>{
+      const text=e.clipboardData&&e.clipboardData.getData('text');
+      if(text&&[...text].filter(c=>!/\s/.test(c)).length>1){
+        e.preventDefault();distributeText(i,text);
+      }
+    });
+    inp.addEventListener('input',e=>{
+      if(composing||e.isComposing||e.inputType==='insertCompositionText'||e.inputType==='insertFromPaste')return;
+      if(!distributeText(i,inp.value))focusNext();
+    });
+    inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&inp.value===''&&i>0)inputs[i-1].focus();});
+  });
+}
+
+/* ============ Five Rounds ============ */
+function renderR1(){
+  const paras=P.text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  $('#sidebar').innerHTML=recPanelHTML();
+  bindRecPanel();
+  $('#practiceMain').innerHTML=`
+    ${roundHeader('Round 1 · Recite the Original','Do not change the text. Read it three times, then record yourself using the panel on the left.')}
+    <div class="text-box">${paras.map(p=>`<p>${[...p].map(c=>`<span class="char" data-ch="${esc(c)}">${esc(c)}</span>`).join('')}</p>`).join('')}</div>
+    <div class="row" style="justify-content:center;margin-top:24px"><button class="btn primary" onclick="nextRound()">Go to Round 2 →</button></div>`;
+  bindCharClicks($('#practiceMain'));
+}
+function sentenceRanges(t){const r=[];let s=0;for(let i=0;i<t.length;i++){if('.!?;\n'.includes(t[i])){if(i>s)r.push({start:s,end:i});s=i+1;}}if(s<t.length)r.push({start:s,end:t.length-1});return r;}
+function randomBlankSet(chars,percent){
+  const targets=[];chars.forEach((c,i)=>{if(isBlankable(c))targets.push(i);});
+  return new Set(shuffle(targets).slice(0,Math.round(targets.length*percent/100)));
+}
+function blankRateHTML(id,percent){
+  return`<div class="blank-rate"><label for="${id}Number">Random blank rate</label><input id="${id}Range" type="range" min="0" max="100" step="1" value="${percent}" aria-label="Blank rate slider"><input id="${id}Number" type="number" min="0" max="100" step="1" value="${percent}" aria-label="Blank percentage"><span>%</span><button class="btn ghost" id="${id}Apply" type="button">Apply Rate</button></div>`;
+}
+function bindBlankRate(id,onApply){
+  const range=$(`#${id}Range`),number=$(`#${id}Number`);
+  const normalize=value=>Math.max(0,Math.min(100,Math.round(Number(value)||0)));
+  range.addEventListener('input',()=>{number.value=range.value;});
+  number.addEventListener('input',()=>{const value=number.value;if(value!==''&&Number(value)>=0&&Number(value)<=100)range.value=String(normalize(value));});
+  number.addEventListener('change',()=>{number.value=String(normalize(number.value));range.value=number.value;});
+  $(`#${id}Apply`).addEventListener('click',()=>onApply(normalize(number.value)));
+}
+let R2_PERCENT=30,R3_PERCENT=70,R4_PERCENT=30;
+function renderR2(){
+  if(!P.r2Ready){P.r2Blank=randomBlankSet(P.chars,R2_PERCENT);P.r2Ready=true;}
+  const total=P.chars.filter(isBlankable).length;
+  $('#sidebar').innerHTML='<h2 style="font-size:14px;color:var(--muted);letter-spacing:.18em">ROUND 2</h2><p style="color:var(--muted);font-size:13px;line-height:1.9;margin-top:10px">Fill in the blanks, then grade your answers. Capitalization and punctuation do not affect spelling checks.</p>';
+  $('#practiceMain').innerHTML=`
+    ${roundHeader('Round 2 · Fill in the Blanks',`${P.r2Blank.size} blanks (${Math.round(P.r2Blank.size/total*100)}% approximately).`)}
+    ${blankRateHTML('r2Rate',R2_PERCENT)}
+    <div class="row" style="justify-content:center;margin-bottom:18px;gap:10px">
+      <button class="btn primary" id="g2">Grade</button>
+      <button class="btn ghost" id="r2Shuffle">New Blanks</button>
+    </div>
+    <div id="s2"></div>
+    <div class="text-box" id="r2Text">${renderTextHTML(P.chars,P.r2Blank)}</div>
+    <div class="row" style="justify-content:center;margin-top:24px;gap:12px">
+      <button class="btn ghost" onclick="P.round=1;renderRound()">← Previous Round</button>
+      <button class="btn primary" onclick="nextRound()">Go to Round 3 →</button>
+    </div>`;
+  bindCharClicks($('#practiceMain'));
+  bindBlankRate('r2Rate',percent=>{R2_PERCENT=percent;P.r2Blank=randomBlankSet(P.chars,percent);P.r2Ready=true;renderR2();});
+  $('#r2Shuffle').addEventListener('click',()=>{P.r2Blank=randomBlankSet(P.chars,R2_PERCENT);P.r2Ready=true;renderR2();});
+  $('#g2').addEventListener('click',()=>{const{right,total}=gradeBlanks($('#r2Text'));$('#s2').innerHTML=scoreBarHTML(right,total);});
+  autoFocusNext($('#r2Text'));
+  addRoundVoiceTool();
+}
+function renderR3(){
+  if(!P.r3Ready){P.r3Blank=randomBlankSet(P.chars,R3_PERCENT);P.r3Ready=true;}
+  const all=P.r3Blank;
+  const total=P.chars.filter(isBlankable).length;
+  $('#sidebar').innerHTML='<h2 style="font-size:14px;color:var(--muted);letter-spacing:.18em">ROUND 3</h2><p style="color:var(--muted);font-size:13px;line-height:1.9;margin-top:10px">Recite the incomplete passage. The challenge gets harder.</p>';
+  $('#practiceMain').innerHTML=`
+    ${roundHeader('Round 3 · Recite the Incomplete Passage',`${all.size} blanks, or ${Math.round(all.size/total*100)}% of the passage.`)}
+    ${blankRateHTML('r3Rate',R3_PERCENT)}
+    <div class="row" style="justify-content:center;margin-bottom:18px;gap:10px">
+      <button class="btn primary" id="g3">Grade</button>
+      <button class="btn ghost" id="r3Shuffle">New Blanks</button>
+    </div>
+    <div id="s3"></div>
+    <div class="text-box" id="r3Text">${renderTextHTML(P.chars,all)}</div>
+    <div class="row" style="justify-content:center;margin-top:24px;gap:12px">
+      <button class="btn ghost" onclick="P.round=2;renderRound()">← Previous Round</button>
+      <button class="btn primary" onclick="nextRound()">Go to Round 4 →</button>
+    </div>`;
+  bindCharClicks($('#practiceMain'));
+  bindBlankRate('r3Rate',percent=>{R3_PERCENT=percent;P.r3Blank=randomBlankSet(P.chars,percent);P.r3Ready=true;renderR3();});
+  $('#r3Shuffle').addEventListener('click',()=>{P.r3Blank=randomBlankSet(P.chars,R3_PERCENT);P.r3Ready=true;renderR3();});
+  $('#g3').addEventListener('click',()=>{const{right,total}=gradeBlanks($('#r3Text'));$('#s3').innerHTML=scoreBarHTML(right,total);});
+  autoFocusNext($('#r3Text'));
+  addRoundVoiceTool();
+}
+let R4MODE='read',R4_CLOZE=new Set(),R4_CLOZE_READY=false,sr4=null,sr4Text='',sr4FinalText='',sr4Running=false,sr4Error='',sr4RetryTimer=null,sr4ManualStop=false;
+function cancelSR4(){
+  clearTimeout(sr4RetryTimer);sr4RetryTimer=null;
+  sr4ManualStop=true;sr4Running=false;
+  if(sr4){const old=sr4;sr4=null;try{old.abort();}catch(e){}}
+}
+function renderR4(){
+  cancelSR4();
+  $('#sidebar').innerHTML='<h2 style="font-size:14px;color:var(--muted);letter-spacing:.18em">ROUND 4</h2><p style="color:var(--muted);font-size:13px;line-height:1.9;margin-top:10px">Read cursive, use speech recognition, or take a random quiz.</p>';
+  $('#practiceMain').innerHTML=`
+    ${roundHeader('Round 4 · Read Cursive','The passage is shown in cursive. Choose an exercise mode.')}
+    <div class="row" style="justify-content:center;gap:10px;margin-bottom:20px">
+      <button class="btn ${R4MODE==='read'?'primary':'ghost'}" onclick="R4MODE='read';renderR4()">🎙 Read Aloud</button>
+      <button class="btn ${R4MODE==='quiz'?'primary':'ghost'}" onclick="R4MODE='quiz';renderR4()">🎲 Random Quiz</button>
+      <button class="btn ${R4MODE==='cloze'?'primary':'ghost'}" onclick="R4MODE='cloze';renderR4()">✍ Cloze</button>
+    </div>
+    <div id="r4Area"></div>`;
+  if(R4MODE==='read')renderR4Read();
+  else if(R4MODE==='quiz')renderR4Quiz();
+  else renderR4Cloze();
+  addRoundVoiceTool();
+}
+function renderR4Cloze(){
+  if(!R4_CLOZE_READY){R4_CLOZE=randomBlankSet(P.chars,R4_PERCENT);R4_CLOZE_READY=true;}
+  $('#r4Area').innerHTML=`
+    ${blankRateHTML('r4Rate',R4_PERCENT)}
+    <div class="card"><h2>Cursive Passage Cloze</h2><p class="hint">${R4_CLOZE.size} characters are hidden. Fill in the original text.</p>
+      <div class="text-box cursive" id="r4ClozeText">${renderTextHTML(P.chars,R4_CLOZE)}</div>
+    </div>
+    <div class="row" style="justify-content:center;gap:10px;margin-bottom:18px">
+      <button class="btn primary" id="r4ClozeGrade">Grade</button>
+      <button class="btn ghost" id="r4ClozeShuffle">Shuffle Blanks</button>
+    </div>
+    <div id="r4ClozeScore"></div>
+    <div class="row" style="justify-content:center;margin-top:24px;gap:12px">
+      <button class="btn ghost" onclick="P.round=3;renderRound()">← Previous Round</button>
+      <button class="btn primary" onclick="nextRound()">Go to Round 5 →</button>
+    </div>`;
+  bindBlankRate('r4Rate',percent=>{R4_PERCENT=percent;R4_CLOZE=randomBlankSet(P.chars,percent);R4_CLOZE_READY=true;renderR4Cloze();});
+  $('#r4ClozeShuffle').addEventListener('click',()=>{R4_CLOZE=randomBlankSet(P.chars,R4_PERCENT);R4_CLOZE_READY=true;renderR4Cloze();});
+  $('#r4ClozeGrade').addEventListener('click',()=>{const{right,total}=gradeBlanks($('#r4ClozeText'));$('#r4ClozeScore').innerHTML=scoreBarHTML(right,total);});
+  bindCharClicks($('#r4Area'));
+  autoFocusNext($('#r4ClozeText'));
+}
+function renderR4Read(){
+  $('#r4Area').innerHTML=`
+    <div class="text-box cursive" style="margin-bottom:20px">${[...P.text].map(c=>c==='\n'?'<br>':`<span class="char" data-ch="${esc(c)}">${esc(c)}</span>`).join('')}</div>
+    <div class="card">
+      <div class="row" style="gap:12px;margin-bottom:12px">
+        <button id="srBtn" class="btn primary" style="flex:1">Start Speech Recognition</button>
+        <div class="rec-timer" id="srTimer">--:--</div>
+      </div>
+      <div id="srResult" style="color:var(--muted);font-size:13px;line-height:1.9">Allow microphone access and read the passage aloud. Use the latest Chrome or Edge with an internet connection. Click “Stop and Grade” when finished.</div>
+    </div>
+    <div class="row" style="justify-content:center;margin-top:24px;gap:12px">
+      <button class="btn ghost" onclick="P.round=3;renderRound()">← Previous Round</button>
+      <button class="btn primary" onclick="nextRound()">Go to Round 5 →</button>
+    </div>`;
+  bindCharClicks($('#r4Area'));
+  $('#srBtn').addEventListener('click',()=>sr4Running?stopSR4():startSR4());
+}
+function startSR4(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){$('#srResult').innerHTML='<span style="color:var(--red)">Web speech recognition is not supported in this browser. Use the latest Chrome or Edge with an internet connection. Some browsers do not support recognition from local HTML files.</span>';return;}
+  sr4Text='';sr4FinalText='';sr4Error='';sr4ManualStop=false;sr4Running=true;
+  $('#srBtn').textContent='Stop and Grade';
+  $('#srResult').textContent='Starting English speech recognition... Allow microphone access, then read aloud.';
+  startSR4Recognition(SR);
+}
+function startSR4Recognition(SR){
+  if(sr4ManualStop)return;
+  const recognition=new SR();sr4=recognition;
+  recognition.lang='en-US';recognition.continuous=true;recognition.interimResults=true;recognition.maxAlternatives=1;
+  recognition.onresult=e=>{
+    if(sr4!==recognition)return;
+    let interimText='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const result=e.results[i];
+      if(result.isFinal)sr4FinalText+=result[0].transcript;
+      else interimText+=result[0].transcript;
+    }
+    sr4Text=sr4FinalText+interimText;
+    $('#srResult').innerHTML=`<div style="color:var(--text)">${sr4FinalText?`Recognized: ${esc(sr4FinalText)}`:'Waiting for recognition...'}${interimText?`<div style="color:var(--muted)">Listening: ${esc(interimText)}</div>`:''}</div>`;
+  };
+  recognition.onerror=e=>{
+    if(sr4!==recognition)return;
+    const messages={
+      'not-allowed':'Microphone access was denied. Allow microphone access in the browser and try again.',
+      'service-not-allowed':'Speech recognition is unavailable. Use the latest Chrome or Edge and stay online. Local HTML files may not support this service.',
+      'audio-capture':'No microphone was detected. Check your system input device.',
+      'no-speech':'No speech detected yet. Recognition is still listening; read the passage clearly.',
+      'network':'Speech recognition could not connect. Check your network and try again.',
+      'aborted':'Speech recognition was cancelled.'
+    };
+    sr4Error=messages[e.error]||`Speech recognition error (${e.error}). Please try again.`;
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'||e.error==='audio-capture'||e.error==='network'){
+      sr4ManualStop=true;
+      $('#srResult').innerHTML=`<span style="color:var(--red)">${esc(sr4Error)}</span>`;
+    }
+  };
+  recognition.onend=()=>{
+    if(sr4!==recognition)return;
+    sr4=null;
+    if(sr4ManualStop){
+      sr4Running=false;
+      const btn=$('#srBtn');if(btn)btn.textContent='Start Speech Recognition';
+      if(sr4Text)gradeSR4();
+      else if($('#srResult'))$('#srResult').innerHTML=`<span style="color:var(--red)">${esc(sr4Error||'No speech was recognized. Check microphone access and your connection, then try again.')}</span>`;
+      return;
+    }
+    $('#srResult').innerHTML=`<div style="color:var(--muted)">${esc(sr4Error||'Recognition stopped temporarily. Reconnecting...')}</div>${sr4FinalText?`<div style="color:var(--text)">Recognized: ${esc(sr4FinalText)}</div>`:''}`;
+    sr4RetryTimer=setTimeout(()=>{
+      sr4RetryTimer=null;
+      if(!sr4ManualStop&&sr4Running)startSR4Recognition(SR);
+    },500);
+  };
+  try{recognition.start();}
+  catch(e){
+    sr4=null;sr4Running=false;sr4ManualStop=true;
+    const btn=$('#srBtn');if(btn)btn.textContent='Start Speech Recognition';
+    $('#srResult').innerHTML=`<span style="color:var(--red)">Could not start speech recognition: ${esc(e.message||'Check microphone access, network, and browser support, then try again.')}</span>`;
+  }
+}
+function stopSR4(){
+  if(!sr4Running)return;
+  sr4ManualStop=true;clearTimeout(sr4RetryTimer);sr4RetryTimer=null;
+  $('#srBtn').textContent='Stopping...';
+  if(!sr4){
+    sr4Running=false;$('#srBtn').textContent='Start Speech Recognition';
+    if(sr4Text)gradeSR4();
+    else $('#srResult').innerHTML=`<span style="color:var(--red)">${esc(sr4Error||'No speech was recognized. Check microphone access and your connection, then try again.')}</span>`;
+    return;
+  }
+  try{sr4.stop();}
+  catch(e){sr4Error=`Could not stop speech recognition: ${e.message||'Please try again.'}`;sr4Running=false;sr4=null;$('#srBtn').textContent='Start Speech Recognition';$('#srResult').innerHTML=`<span style="color:var(--red)">${esc(sr4Error)}</span>`;}
+}
+function gradeSR4(){
+  const clean=s=>s.toLocaleLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
+  const t=clean(P.text),g=clean(sr4Text);
+  if(!g){$('#srResult').innerHTML='<span style="color:var(--red)">No speech was recognized. Please try again.</span>';return;}
+  const pct=matchPercent(t,g);
+  let color='var(--red)';if(pct>=90)color='var(--green)';else if(pct>=60)color='var(--gold)';
+  $('#srResult').innerHTML=`<div style="font-size:22px;font-weight:800;color:${color}">${pct}% <span style="font-size:13px;color:var(--muted)">Match</span></div><div style="margin-top:8px;color:var(--muted);font-size:12px">Recognized text: ${esc(sr4Text)}</div>`;
+}
+function renderR4Quiz(){
+  const letters=P.chars.map((c,i)=>({c,i})).filter(o=>isBlankable(o.c));
+  const pick=shuffle(letters).slice(0,Math.min(Math.round(letters.length/2),20));
+  const sents=P.text.split(/(?<=[.!?])/).map(s=>s.trim()).filter(Boolean);
+  const sp=shuffle(sents).slice(0,Math.min(10,sents.length));
+  $('#r4Area').innerHTML=`
+    <div class="card"><h2>Letter Quiz (${pick.length})</h2><p class="hint">Identify each letter shown in the cursive style.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;line-height:2.4">
+        ${pick.map(o=>`<div style="display:flex;align-items:center;gap:6px"><span class="cursive" style="font-size:34px;color:var(--gold)">${esc(o.c)}</span><input class="blank" data-ans="${esc(o.c)}" style="width:1.5em"></div>`).join('')}
+      </div>
+    </div>
+    <div class="card"><h2>Sentence Quiz (${sp.length})</h2>
+      ${sp.map(s=>`<div style="margin-bottom:16px"><div class="cursive" style="font-size:26px;color:var(--gold);margin-bottom:8px">${esc(s)}</div><input class="blank" data-ans="${esc(s)}" style="width:100%;text-align:left;border-radius:8px;border:1px solid var(--line);padding:8px 12px;height:auto" placeholder="Rewrite the sentence"></div>`).join('')}
+    </div>
+    <div class="row" style="justify-content:center;gap:12px"><button class="btn primary" id="qg">Grade</button><button class="btn ghost" onclick="renderR4Quiz()">New Questions</button></div>
+    <div id="qs" style="margin-top:18px"></div>
+    <div class="row" style="justify-content:center;margin-top:24px;gap:12px">
+      <button class="btn ghost" onclick="P.round=3;renderRound()">← Previous Round</button>
+      <button class="btn primary" onclick="nextRound()">Go to Round 5 →</button>
+    </div>`;
+  $('#qg').addEventListener('click',()=>{
+    const inputs=[...$('#r4Area').querySelectorAll('input.blank')];let right=0;
+    inputs.forEach(inp=>{
+      const old=inp.nextElementSibling;if(old&&old.classList.contains('mark'))old.remove();
+      inp.classList.remove('ok','bad');
+      const ans=inp.dataset.ans;
+      const v=normalizeAnswer(inp.value),t=normalizeAnswer(ans);
+      const ok=v===t;
+      inp.classList.add(ok?'ok':'bad');inp.readOnly=true;
+      const m=document.createElement('span');
+      if(ok){m.className='mark mark-ok';m.textContent='✓';right++;}
+      else{m.className='mark mark-bad';m.innerHTML='✗<b>'+esc(ans)+'</b>';}
+      inp.after(m);
+    });
+    $('#qs').innerHTML=scoreBarHTML(right,inputs.length);
+  });
+}
+let R5STEP='recite',dictateIdx=0,dictateSents=[];
+function renderR5(){
+  stopRoundVoice();
+  $('#sidebar').innerHTML='<h2 style="font-size:14px;color:var(--muted);letter-spacing:.18em">ROUND 5</h2><p style="color:var(--muted);font-size:13px;line-height:1.9;margin-top:10px">Final review: recite, take dictation, then review your work.</p>';
+  $('#practiceMain').innerHTML=`
+    ${roundHeader('Round 5 · Final Review','Complete the recitation, dictation, and review steps.')}
+    <div class="row" style="justify-content:center;gap:10px;margin-bottom:20px">
+      <button class="btn ${R5STEP==='recite'?'primary':'ghost'}" onclick="R5STEP='recite';renderR5()">① Recite</button>
+      <button class="btn ${R5STEP==='dictate'?'primary':'ghost'}" onclick="R5STEP='dictate';renderR5()">② Dictation</button>
+      <button class="btn ${R5STEP==='grade'?'primary':'ghost'}" onclick="R5STEP='grade';renderR5()">③ Review</button>
+    </div>
+    <div id="r5Area"></div>`;
+  if(R5STEP==='recite')renderR5Recite();
+  else if(R5STEP==='dictate')renderR5Dictate();
+  else renderR5Grade();
+  addRoundVoiceTool();
+}
+function renderR5Recite(){
+  const paras=P.text.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  $('#r5Area').innerHTML=`
+    <div class="card"><p class="hint" style="margin:0">Recite the entire passage and record yourself using the panel on the left. Then continue to dictation.</p></div>
+    <div class="text-box">${paras.map(p=>`<p>${[...p].map(c=>`<span class="char" data-ch="${esc(c)}">${esc(c)}</span>`).join('')}</p>`).join('')}</div>
+    <div class="row" style="justify-content:center;margin-top:24px"><button class="btn primary" onclick="R5STEP='dictate';renderR5()">Finished Reciting — Start Dictation →</button></div>`;
+  $('#sidebar').innerHTML=recPanelHTML();
+  bindRecPanel();
+  bindCharClicks($('#r5Area'));
+}
+function renderR5Dictate(){
+  if(!dictateSents.length)dictateSents=P.text.split(/(?<=[.!?;\n])/).map(s=>s.trim()).filter(Boolean);
+  $('#r5Area').innerHTML=`
+    <div class="card">
+      <h2>DICTATION</h2><p class="hint">Click “Read Next Sentence,” write it down, and grade your answers when finished.</p>
+      <div class="row" style="gap:10px;margin-bottom:16px">
+        <button class="btn ghost" id="spk">🔊 Read Next Sentence</button>
+        <button class="btn ghost" id="spkAll">🔊 Read All from Start</button>
+        <span id="dp" style="color:var(--muted);font-size:13px"></span>
+      </div>
+      <div id="dl">${dictateSents.map((s,i)=>`<div style="margin-bottom:14px"><div style="font-size:13px;color:var(--muted);margin-bottom:6px">Sentence ${i+1}</div><input class="blank" data-ans="${esc(s)}" style="width:100%;text-align:left;border-radius:8px;border:1px solid var(--line);padding:9px 12px;height:auto" placeholder="Type the dictated text..."></div>`).join('')}</div>
+      <div class="row" style="justify-content:center;margin-top:20px;gap:12px"><button class="btn primary" id="dg">Grade</button></div>
+      <div id="ds" style="margin-top:18px"></div>
+    </div>`;
+  dictateIdx=0;updateDP();
+  $('#spk').addEventListener('click',()=>{if(dictateIdx>=dictateSents.length)dictateIdx=0;speak(dictateSents[dictateIdx]);dictateIdx++;updateDP();});
+  $('#spkAll').addEventListener('click',()=>{dictateIdx=0;speakSeq(dictateSents);updateDP();});
+  $('#dg').addEventListener('click',()=>{
+    const inputs=[...$('#r5Area').querySelectorAll('input.blank')];let right=0;
+    inputs.forEach(inp=>{
+      const old=inp.nextElementSibling;if(old&&old.classList.contains('mark'))old.remove();
+      inp.classList.remove('ok','bad');
+      const ans=inp.dataset.ans;
+      const v=normalizeAnswer(inp.value),t=normalizeAnswer(ans);
+      const ok=v===t;
+      inp.classList.add(ok?'ok':'bad');
+      const m=document.createElement('span');
+      if(ok){m.className='mark mark-ok';m.textContent='✓';right++;}
+      else{m.className='mark mark-bad';m.innerHTML='✗<b>'+esc(ans)+'</b>';}
+      inp.after(m);
+    });
+    $('#ds').innerHTML=scoreBarHTML(right,inputs.length);
+  });
+}
+function updateDP(){const e=$('#dp');if(e)e.textContent=`Read ${Math.min(dictateIdx,dictateSents.length)} / ${dictateSents.length}`;}
+function speak(t){if(!speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-US';u.rate=.85;speechSynthesis.speak(u);}
+function speakSeq(arr){if(!speechSynthesis)return;speechSynthesis.cancel();arr.forEach(s=>{const u=new SpeechSynthesisUtterance(s);u.lang='en-US';u.rate=.85;speechSynthesis.speak(u);});}
+function renderR5Grade(){
+  $('#r5Area').innerHTML=`
+    <div class="card"><h2>REVIEW YOUR WORK</h2><p class="hint">Take a photo of your workbook and ask the AI to review it.</p>
+      <div class="row" style="gap:12px"><button class="btn primary" onclick="askAIAboutHomework()">📷 Ask AI to Review</button><button class="btn ghost" onclick="R5STEP='dictate';renderR5()">← Back to Dictation</button></div>
+    </div>
+    <div class="card"><h2>CHALLENGE RESULTS</h2><p class="hint">You completed all five rounds!</p>
+      <div class="row" style="gap:12px"><button class="btn primary" onclick="goPractice()">Try Again</button><button class="btn ghost" onclick="goHome()">Home</button></div>
+    </div>`;
+}
+function askAIAboutHomework(){toggleAI(true);pushAI('user','I just finished a dictation exercise. Point out any spelling mistakes and suggest ways to remember the correct spelling.');callAI();}
+
+/* ============ Textbook Challenge ============ */
+const C={grade:'1',subject:'',version:'',term:'',book:null};
+const subjectLabel=s=>s;
+const gradeLabel=g=>`Grade ${g}`;
+const versionLabel=v=>v;
+const termLabel=t=>t;
+function goChallenge(){show('challenge');resetChallenge();}
+function resetChallenge(){C.grade='1';C.subject='';C.version='';C.term='';C.book=null;renderChallengeSelect();}
+function renderChallengeSelect(){
+  const subs=Object.keys(LIB);
+  $('#challengeMain').innerHTML=`
+    <div class="card">
+      <h2>Textbook Challenge · Choose a Grade and Subject</h2>
+      <p class="hint">Choose a grade, subject, and an available textbook edition, then select a term or unit. Only content included in this app is listed.</p>
+      <div class="selects" style="margin-bottom:18px">
+        <select id="gradeSelect" aria-label="Grade">${Array.from({length:6},(_,i)=>`<option value="${i+1}">Grade ${i+1}</option>`).join('')}</select>
+      </div>
+      <div class="subj-tabs" id="st">${subs.map((s,i)=>`<button class="subj-tab ${i===0?'active':''}" data-s="${esc(s)}">${esc(subjectLabel(s))}</button>`).join('')}</div>
+      <div class="selects">
+        <select id="sv"><option value="">— Edition —</option></select>
+        <select id="stm"><option value="">— Term —</option></select>
+      </div>
+      <div id="ba" style="margin-top:22px"></div>
+    </div>`;
+  C.grade='1';C.subject=subs[0];bindSubTabs();refreshVer();
+  $('#gradeSelect').value=C.grade;
+  $('#gradeSelect').addEventListener('change',e=>{C.grade=e.target.value;C.term='';$('#ba').innerHTML='';if(C.version)refreshTerm();else $('#stm').value='';});
+  $('#sv').addEventListener('change',e=>{C.version=e.target.value;C.term='';$('#ba').innerHTML='';if(C.version)refreshTerm();});
+  $('#stm').addEventListener('change',e=>{C.term=e.target.value;renderUnits();});
+}
+function bindSubTabs(){$$('#st .subj-tab').forEach(b=>b.addEventListener('click',()=>{$$('#st .subj-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');C.subject=b.dataset.s;C.version='';C.term='';refreshVer();$('#ba').innerHTML='';}));}
+function refreshVer(){const vs=Object.keys(LIB[C.subject]||{});$('#sv').innerHTML='<option value="">— Edition —</option>'+vs.map(v=>`<option value="${esc(v)}">${esc(versionLabel(v))}</option>`).join('');$('#stm').innerHTML='<option value="">— Term —</option>';}
+function refreshTerm(){
+  const books=LIB[C.subject][C.version]||{};
+  const ts=Object.keys(books).filter(t=>t.startsWith(`Grade ${C.grade} ·`));
+  $('#stm').innerHTML='<option value="">— Term —</option>'+ts.map(t=>`<option value="${esc(t)}">${esc(termLabel(t))}</option>`).join('');
+  if(!ts.length)$('#ba').innerHTML=`<p class="hint">No ${esc(subjectLabel(C.subject))} textbook for ${esc(gradeLabel(C.grade))} is included in ${esc(versionLabel(C.version))}.</p>`;
+}
+function renderUnits(){
+  const us=LIB[C.subject][C.version]&&LIB[C.subject][C.version][C.term];
+  if(!us||!us.length){$('#ba').innerHTML='<p class="hint">No content is available.</p>';return;}
+  $('#ba').innerHTML=us.map((u,ui)=>`
+    <div class="unit-block ${ui===0?'open':''}">
+      <div class="unit-head"><span>${esc(u.u)} <span style="color:var(--muted);font-size:12.5px;font-weight:400;margin-left:8px">${u.items.length} items</span></span><span class="arrow">▶</span></div>
+      <div class="unit-body">${u.items.map((it,ii)=>`<div class="item-row" onclick="openItem(${ui},${ii})"><span class="idx">${ii+1}</span><span>${esc(it.t)}</span><span class="meta">${esc(it.a||'')}</span></div>`).join('')}</div>
+    </div>`).join('');
+  $$('#ba .unit-head').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+}
+function openItem(ui,ii){
+  const it=LIB[C.subject][C.version][C.term][ui].items[ii];C.book=it;
+  $('#challengeMain').innerHTML=`
+    <div class="card">
+      <div class="row between" style="margin-bottom:14px">
+        <div><h2 style="margin:0">${esc(it.t)}</h2><div style="color:var(--muted);font-size:13px;margin-top:6px;padding-left:15px">${esc(it.a||'')} · ${esc(termLabel(C.term))}</div></div>
+        <button class="btn ghost" onclick="renderUnits()">← Back</button>
+      </div>
+      <div class="text-box" style="padding:24px 26px;font-size:19px">
+        ${it.x.split(/\n+/).map(p=>`<p>${[...p].map(c=>`<span class="char" data-ch="${esc(c)}">${esc(c)}</span>`).join('')}</p>`).join('')}
+      </div>
+      <div class="row" style="justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap">
+        <button class="btn primary" onclick="challengePractice()">⚔ Start a 5-Round Challenge</button>
+        <button class="btn ghost" onclick="speak(C.book.x.replace(/\\n/g,'，'))">🔊 Read Aloud</button>
+      </div>
+    </div>`;
+  bindCharClicks($('#challengeMain'));
+}
+function challengePractice(){
+  P.text=C.book.x;P.chars=[...P.text];P.round=1;P.started=true;P.r2Blank=new Set();P.r3Blank=new Set();
+  P.r2Ready=false;P.r3Ready=false;
+  R4_CLOZE=new Set();R4_CLOZE_READY=false;
+  dictateSents=[];R5STEP='recite';
+  show('practice');$('#btnRestart').hidden=false;renderSteps();renderRound();
+}
+
+/* ============ Character Details Dialog ============ */
+function openChar(ch){
+  if(!ch||!/[A-Za-z]/.test(ch))return;
+  $('#charModal').hidden=false;
+  $('#charBig').textContent=ch;$('#charPinyin').textContent='English letter';
+  const words=new Set();const src=P.text||(C.book?C.book.x:'');
+  if(src){for(const word of src.match(/[A-Za-z]+/g)||[])if(word.toLowerCase().includes(ch.toLowerCase()))words.add(word);}
+  if(!words.size)words.add(ch);
+  $('#wordChips').innerHTML=[...words].slice(0,10).map(w=>`<span class="chip">${esc(w)}</span>`).join('');
+  const t=$('#strokeTarget');t.innerHTML=`<span style="color:var(--muted);font-size:13px">${esc(ch)} appears in the highlighted word or passage.</span>`;
+}
+function replayStroke(){const t=$('#strokeTarget');if(t)t.animate([{opacity:.4},{opacity:1}],{duration:350});}
+function closeChar(){$('#charModal').hidden=true;$('#strokeTarget').innerHTML='';}
+
+/* ============ AI Assistant ============ */
+const AIP={
+  deepseek:{label:'DeepSeek',endpoint:'https://api.deepseek.com/chat/completions',model:'deepseek-chat'},
+  kimi:{label:'Kimi',endpoint:'https://api.moonshot.cn/v1/chat/completions',model:'moonshot-v1-8k'}
+};
+const AI={history:[],busy:false};
+let cfgProvider='kimi';
+function loadCfg(){try{return JSON.parse(localStorage.getItem('ai_config')||'{}');}catch(e){return{};}}
+function saveCfg(c){localStorage.setItem('ai_config',JSON.stringify(c));}
+function activeCfg(){
+  const c=loadCfg();const p=c.provider||'kimi';const base=AIP[p]||AIP.kimi;
+  return{provider:p,label:base.label,endpoint:c['ep_'+p]||base.endpoint,model:c['md_'+p]||base.model,key:(c.keys&&c.keys[p])||''};
+}
+function openAIConfig(){const c=loadCfg();cfgProvider=c.provider||'kimi';renderProvTabs();fillCfg();$('#cfgMsg').innerHTML='';$('#aiConfigModal').hidden=false;}
+function closeAIConfig(){$('#aiConfigModal').hidden=true;}
+function renderProvTabs(){
+  $('#providerTabs').innerHTML=Object.keys(AIP).map(k=>`<button class="provider-tab ${k===cfgProvider?'active':''}" data-p="${k}">${AIP[k].label}</button>`).join('');
+  $$('#providerTabs .provider-tab').forEach(b=>b.addEventListener('click',()=>{cfgProvider=b.dataset.p;renderProvTabs();fillCfg();}));
+}
+function fillCfg(){
+  const c=loadCfg();const base=AIP[cfgProvider];
+  $('#cfgEndpoint').value=c['ep_'+cfgProvider]||base.endpoint;
+  $('#cfgModel').value=c['md_'+cfgProvider]||base.model;
+  $('#cfgKey').value=(c.keys&&c.keys[cfgProvider])||'';
+}
+function saveAIConfig(){
+  const c=loadCfg();c.provider=cfgProvider;
+  if(!c.keys)c.keys={};
+  c.keys[cfgProvider]=$('#cfgKey').value.trim();
+  c['ep_'+cfgProvider]=$('#cfgEndpoint').value.trim();
+  c['md_'+cfgProvider]=$('#cfgModel').value.trim();
+  saveCfg(c);updateBadge();
+  $('#cfgMsg').innerHTML='<span style="color:var(--green)">✓ Saved</span>';
+  setTimeout(()=>$('#cfgMsg').innerHTML='',2000);
+}
+function updateBadge(){const a=activeCfg();const b=$('#aiProviderBadge');if(b)b.textContent=a.label;}
+async function testAIConnection(){
+  const ep=$('#cfgEndpoint').value.trim(),md=$('#cfgModel').value.trim(),k=$('#cfgKey').value.trim();
+  if(!ep||!k){$('#cfgMsg').innerHTML='<span style="color:var(--red)">Enter an endpoint and API key.</span>';return;}
+  $('#cfgMsg').innerHTML='<span style="color:var(--muted)">Testing...</span>';
+  try{
+    const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:md,messages:[{role:'user',content:'Reply "Connection successful".'}],max_tokens:20})});
+    if(!r.ok){const t=await r.text();$('#cfgMsg').innerHTML=`<span style="color:var(--red)">✗ ${r.status}: ${esc(t.slice(0,120))}</span>`;return;}
+    const d=await r.json();const rep=d.choices?.[0]?.message?.content||'';
+    $('#cfgMsg').innerHTML=`<span style="color:var(--green)">✓ Success: ${esc(rep.slice(0,50))}</span>`;
+  }catch(e){$('#cfgMsg').innerHTML=`<span style="color:var(--red)">✗ ${esc(e.message)}</span>`;}
+}
+function toggleAI(force){
+  const p=$('#aiPanel');const open=typeof force==='boolean'?force:p.hidden;p.hidden=!open;
+  if(open){updateBadge();if(!$('#aiMsgs').children.length){const a=activeCfg();pushAI('sys',`I'm your ${a.label} assistant. I can explain vocabulary, create questions, and suggest study methods.${a.key?'':' (Click ⚙ to configure your API key.)'}`);}updateQuickAsks();$('#aiInput').focus();}
+}
+function pushAI(role,text){
+  const d=document.createElement('div');d.className='msg '+role;d.textContent=text;
+  $('#aiMsgs').appendChild(d);$('#aiMsgs').scrollTop=$('#aiMsgs').scrollHeight;
+  if(role==='user'||role==='ai')AI.history.push({role:role==='ai'?'assistant':'user',content:text});
+}
+function updateQuickAsks(){
+  const v=document.body.dataset.view||'home';const el=$('#quickAsks');if(!el)return;
+  let qs=v==='practice'?['Explain this passage','Commonly confused characters','Create 3 fill-in questions','Memorization tips']:v==='challenge'?['Suggest a recitation order','Author background','Quiz me on this passage']:['How do I use this?','Recitation tips','Create a study plan'];
+  el.innerHTML=qs.map(q=>`<button onclick="quickAsk('${q.replace(/'/g,"\\'")}')">${esc(q)}</button>`).join('');
+}
+function quickAsk(q){pushAI('user',q);callAI();}
+async function sendAI(){const t=$('#aiInput').value.trim();if(!t||AI.busy)return;$('#aiInput').value='';pushAI('user',t);callAI();}
+async function callAI(){
+  const a=activeCfg();
+  if(!a.key){pushAI('sys','Click ⚙ to configure your API key first.');openAIConfig();return;}
+  if(AI.busy)return;AI.busy=true;$('#aiSend').disabled=true;
+  const th=document.createElement('div');th.className='msg ai';th.textContent=a.label+' is thinking...';$('#aiMsgs').appendChild(th);$('#aiMsgs').scrollTop=$('#aiMsgs').scrollHeight;
+  const ctx=P.text?`\n\n[Current passage]\n${P.text.slice(0,1200)}`:(C.book?`\n\n[Current passage]\n${C.book.x.slice(0,1200)}`:'');
+  try{
+    const r=await fetch(a.endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+a.key},body:JSON.stringify({model:a.model,messages:[{role:'system',content:'You are a friendly, concise tutor for primary-school students. Explain concepts clearly, create practice questions, and offer study advice. Reply in English.'+ctx},...AI.history.slice(-12)],temperature:.7})});
+    th.remove();
+    if(!r.ok){const t=await r.text();pushAI('sys',`Request failed (${r.status}): ${t.slice(0,180)}`);}
+    else{const d=await r.json();pushAI('ai',d.choices?.[0]?.message?.content||'(No response)');}
+  }catch(e){th.remove();pushAI('sys','Network error: '+e.message);}
+  finally{AI.busy=false;$('#aiSend').disabled=false;}
+}
+
+/* ============ Initialization ============ */
+document.addEventListener('DOMContentLoaded',()=>{
+  show('home');updateBadge();initGlobalVoice();
+  $('#aiInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}});
+  $('#charModal').addEventListener('click',e=>{if(e.target.id==='charModal')closeChar();});
+  $('#aiConfigModal').addEventListener('click',e=>{if(e.target.id==='aiConfigModal')closeAIConfig();});
+  /* Keyboard shortcuts */
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){closeChar();closeAIConfig();}
+    if(e.key===' '&&document.body.dataset.view==='practice'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA'){e.preventDefault();const b=$('#recBtn');if(b)b.click();}
+  });
+});
+window.addEventListener('beforeunload',()=>{
+  if(REC.stream)REC.stream.getTracks().forEach(t=>t.stop());
+  if(GLOBAL_VOICE.stream)GLOBAL_VOICE.stream.getTracks().forEach(t=>t.stop());
+  if(GLOBAL_VOICE.timer)clearInterval(GLOBAL_VOICE.timer);
+  GLOBAL_VOICE.urls.forEach(url=>URL.revokeObjectURL(url));
+});
+</script>
+</body>
+</html>
